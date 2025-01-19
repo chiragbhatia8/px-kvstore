@@ -1,140 +1,121 @@
-# API Documentation for Python-based Key-Value Store
+# API Documentation for px-kvstore
 
-This document outlines the API endpoints available in the Python-based Key-Value Store application. Each endpoint allows you to interact with the key-value store for creating, retrieving, updating, and deleting key-value pairs.
+The `px-kvstore` service exposes a simple REST API to interact with a key-value store. Below are the supported endpoints:
 
-## Base URL
+---
 
-The base URL for the API is:
-```
-http://localhost:8080
-```
+## 1. PUT /kv
+**Description**: Create or update a key-value pair.
 
-## Endpoints
-
-### 1. Create or Update a Key-Value Pair
-
-- **HTTP Method**: `PUT`
-- **Endpoint**: `/kv`
-- **Request Body**:
+**Request**:
+- Method: `PUT`
+- URL: `/kv`
+- Headers: 
+  - `Content-Type: application/json`
+- Body (JSON):
   ```json
   {
     "key": "someKey",
     "value": "someValue"
   }
   ```
-- **Description**: This endpoint creates a new key-value pair or updates an existing one. The request body must contain both a `key` and a `value`.
 
-- **Responses**:
-  - **200 OK**: Successfully created or updated the key-value pair.
-    ```json
-    {
-      "someKey": "someValue"
-    }
-    ```
-  - **400 Bad Request**: If the request body is missing the `value` field.
-    ```json
-    {
-      "error": "Missing value"
-    }
-    ```
+**Response**:
+- Status: `200 OK`
+- Body:
+  ```json
+  {
+    "someKey": "someValue"
+  }
+  ```
 
-### 2. Retrieve a Single Key-Value Pair
+---
 
-- **HTTP Method**: `GET`
-- **Endpoint**: `/kv?key=someKey`
-- **Query Parameters**:
-  - `key`: The key of the value to retrieve.
+## 2. GET /kv
+**Description**: Retrieve key-value pairs.
 
-- **Description**: This endpoint retrieves the value associated with the specified key.
+### a) Retrieve all pairs:
+- Method: `GET`
+- URL: `/kv`
+- Response:
+  ```json
+  {
+    "key1": "value1",
+    "key2": "value2"
+  }
+  ```
 
-- **Responses**:
-  - **200 OK**: Successfully retrieved the key-value pair.
-    ```json
-    {
-      "someKey": "someValue"
-    }
-    ```
-  - **404 Not Found**: If the specified key does not exist.
-    ```json
-    {
-      "error": "Key not found"
-    }
-    ```
+### b) Retrieve a specific key:
+- Method: `GET`
+- URL: `/kv?key=someKey`
+- Response:
+  ```json
+  {
+    "someKey": "someValue"
+  }
+  ```
+- If the key does not exist:
+  ```json
+  {
+    "error": "Key not found"
+  }
+  ```
 
-### 3. Retrieve All Key-Value Pairs
+---
 
-- **HTTP Method**: `GET`
-- **Endpoint**: `/kv`
-- **Description**: This endpoint retrieves all key-value pairs stored in the key-value store.
+## 3. DELETE /kv
+**Description**: Delete a specific key.
 
-- **Responses**:
-  - **200 OK**: Successfully retrieved all key-value pairs.
-    ```json
-    {
-      "key1": "value1",
-      "key2": "value2"
-    }
-    ```
-
-### 4. Delete a Key-Value Pair
-
-- **HTTP Method**: `DELETE`
-- **Endpoint**: `/kv`
-- **Request Body**:
+**Request**:
+- Method: `DELETE`
+- URL: `/kv`
+- Headers:
+  - `Content-Type: application/json`
+- Body (JSON):
   ```json
   {
     "key": "someKey"
   }
   ```
-- **Description**: This endpoint removes the specified key and its associated value from the store.
 
-- **Responses**:
-  - **200 OK**: Successfully deleted the key-value pair.
-    ```json
-    {
-      "message": "Key deleted"
-    }
-    ```
-  - **404 Not Found**: If the specified key does not exist.
-    ```json
-    {
-      "error": "Key not found"
-    }
-    ```
+**Response**:
+- If the key is deleted:
+  ```json
+  {
+    "result": "Key deleted"
+  }
+  ```
+- If the key does not exist:
+  ```json
+  {
+    "error": "Key not found"
+  }
+  ```
 
-## Error Handling
+---
 
-The API returns standard HTTP status codes to indicate the success or failure of a request. Common error responses include:
+## 4. Graceful Shutdown
+Pressing `Ctrl+C` during the server’s runtime initiates a **5-second countdown** before the server shuts down. During this period, the server saves all data to disk.
 
-- **400 Bad Request**: Indicates that the request was malformed or missing required fields.
-- **404 Not Found**: Indicates that the requested resource (key) does not exist.
+---
 
-## Example Usage with curl
-
-### PUT a Key-Value Pair
+## Examples
+### a) PUT a key-value pair:
 ```bash
 curl -X PUT -H "Content-Type: application/json" \
-  -d '{"key":"foo","value":"bar"}' \
-  http://localhost:8080/kv
+     -d '{"key":"example","value":"hello"}' \
+     http://localhost:8080/kv
 ```
 
-### GET a Single Key
-```bash
-curl "http://localhost:8080/kv?key=foo"
-```
-
-### GET All Keys
+### b) GET all key-value pairs:
 ```bash
 curl http://localhost:8080/kv
 ```
 
-### DELETE a Key
+### c) DELETE a key:
 ```bash
 curl -X DELETE -H "Content-Type: application/json" \
-  -d '{"key":"foo"}' \
-  http://localhost:8080/kv
+     -d '{"key":"example"}' \
+     http://localhost:8080/kv
 ```
-
-## Conclusion
-
-This API provides a simple interface for managing key-value pairs in a Python-based key-value store. For further details or specific use cases, please refer to the source code or additional documentation.
+```

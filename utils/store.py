@@ -4,7 +4,7 @@ import threading
 from functools import lru_cache
 
 ###############################################################################
-# 1. In-Memory Store
+# In-Memory Store
 ###############################################################################
 class InMemoryKeyValueStore:
     def __init__(self):
@@ -30,7 +30,7 @@ class InMemoryKeyValueStore:
 
 
 ###############################################################################
-# 2. Persistence (JSON on Disk)
+# Persistence (JSON on Disk)
 ###############################################################################
 class FilePersistentStore(InMemoryKeyValueStore):
     """
@@ -61,9 +61,16 @@ class FilePersistentStore(InMemoryKeyValueStore):
             self._save()
         return removed
 
+    def save_and_shutdown(self):
+        """
+        Save the data and release resources during server shutdown.
+        """
+        print("Persisting data to disk before shutdown...")
+        self._save()
+
 
 ###############################################################################
-# 5. Caching (LRU)
+# Caching (LRU)
 ###############################################################################
 class CachedStore(InMemoryKeyValueStore):
     """

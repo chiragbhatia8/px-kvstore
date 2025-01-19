@@ -7,25 +7,7 @@ This is a Python-based Key-Value Store that offers the following features:
 - Sharding across multiple store instances using consistent hashing
 
 All functionality is implemented with Python standard library modules only.
-
-## Project Structure
-
-```
-px-kvstore/
-  main.py             - Launches HTTP server, selects store
-  utils/
-    store.py            - Store classes (in-memory, persistent etc.)
-    sharding.py         - Sharded store logic
-  tests/              - Unit tests
-    test_store.py
-    test_sharding.py
-  docs/
-    test_apis.md     - Detailed instructions on testing endpoints (curl examples)
-  README.md          - This file
-  pyproject.toml      
-  setup.py
-  Dockerfile
-```
+For more detail, see [docs/UTILS.md](docs/UTILS.md).
 
 ## Installation
 
@@ -125,7 +107,7 @@ A quick example with curl commands (service running on localhost:8080):
      http://localhost:8080/kv
    ```
 
-For more detail, see docs/apis.md.
+For more detail, For more detail, see [docs/API.md](docs/API.md).
 
 ## Testing
 
@@ -138,8 +120,18 @@ The tests include:
 - Unit tests for each store class (test_store.py)
 - Tests for sharding logic (test_sharding.py)
 
-## Next Steps
+Future Enhancements
+1. Cache Expiration
+Add TTL (time-to-live) for key-value pairs to automatically expire outdated or unnecessary data. This ensures optimal memory usage and helps manage fast-changing datasets.
 
-1. Simple obfuscation of data at rest
-2. Optional compression (zlib) for data persistence
-3. Different types of data matching in key value store
+2. Advanced Querying
+Extend the key-value store to support complex queries such as:
+K-Nearest Neighbors (KNN): Allow efficient similarity searches, for example, finding keys with values closest to a given target. This could be implemented using techniques like vector embeddings, spatial indexing (e.g., KD-Trees), or approximate nearest neighbors (ANN).
+Partial Matches: Enable wildcard or pattern-based searches for keys or values.
+Range Queries: Fetch all keys or values within a specific range, useful for numerical data.
+
+3. Data Compression
+Implement compression mechanisms like zlib to reduce storage size and improve I/O performance when handling large datasets.
+
+4. Sharded Expansion
+Expand the sharding logic to dynamically rebalance keys when new shards (stores) are added. This allows for seamless horizontal scaling without disrupting ongoing operations.

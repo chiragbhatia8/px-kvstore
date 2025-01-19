@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-
 import json
 import sys
+import time
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs
+import signal
+
 
 # Import any store classes you want to use
 from utils.store import CachedStore, FilePersistentStore
@@ -14,13 +16,13 @@ from utils.sharding import ShardedKeyValueStore
 STORE_LOCK = threading.Lock()
 
 # Example 1: Use a file-based store alone
-# STORE = FilePersistentStore(filename="file_store.json")
+STORE = FilePersistentStore(filename="file_store.json")
 
 # Example 2: Combine multiple stores in a sharded arrangement
-STORE = ShardedKeyValueStore([
-    FilePersistentStore(filename="file_store.json"),
-    CachedStore()
-])
+# STORE = ShardedKeyValueStore([
+#     FilePersistentStore(filename="file_store.json"),
+#     CachedStore()
+# ])
 
 class KVHandler(BaseHTTPRequestHandler):
     """
@@ -123,10 +125,40 @@ class KVHandler(BaseHTTPRequestHandler):
         self.wfile.write(payload)
 
 def run_server(host="0.0.0.0", port=8080):
-    """Starts the HTTP server on the given host and port."""
     server = HTTPServer((host, port), KVHandler)
     print(f"px-kvstore running at http://{host}:{port}")
-    server.serve_forever()
+
+    shutdown_event = threading.Event()
+
+    def handle_sigint(signal_num, frame):
+        print("\nReceived Ctrl+C. Saving store and shutting down...")
+        shutdown_event.set()
+        if hasattr(STORE, "save_and_shutdown"):
+            with STORE_LOCK:
+                STORE.save_and_shutdown()
+
+        # Countdown for shutdown
+        for i in range(5, 0, -1):
+            print(f"Shutting down in {i} seconds...")
+            time.sleep(1)
+
+        # Trigger server shutdown
+        threading.Thread(target=server.shutdown).start()
+
+    signal.signal(signal.SIGINT, handle_sigint)
+
+    try:
+        server.serve_forever()
+    except Exception as e:
+        print(f"Error during server runtime: {e}")
+    finally:
+        print("Server stopping. Attempting final save...")
+        if hasattr(STORE, "save_and_shutdown"):
+            with STORE_LOCK:
+                STORE.save_and_shutdown()
+        server.server_close()
+        print("Server shut down cleanly.")
+
 
 def cli():
     """If you install this package and run 'px-kvstore', this function is called."""
